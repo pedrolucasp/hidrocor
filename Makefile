@@ -15,7 +15,7 @@ goflags = $(GOFLAGS)
 all: hidrocor
 
 hidrocor:
-	$(GO) build $(goflags) ./cmd/hidrocor
+	$(GO) build $(goflags) -o hidrocor .
 
 clean:
 	$(RM) -rf hidrocor

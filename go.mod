@@ -1,4 +1,4 @@
-module git.eletrotupi.com/hidrocor
+module git.sr.ht/~porcellis/hidrocor
 
 go 1.16
 

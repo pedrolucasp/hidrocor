@@ -6,11 +6,17 @@
     <title>{{ .Title }}</title>
     <style>
       body {
+        background-color: #FFFFFF;
+        color: #111111;
         text-align: center;
         max-width: 600px;
         margin: 0 auto;
         padding: 0 1rem;
         font-family: sans-serif;
+      }
+
+      a {
+        color: #001f3f;
       }
 
       h1 {
@@ -20,6 +26,17 @@
 
       article {
         text-align: left;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #111111;
+          color: #DDDDDD;
+        }
+
+        a {
+          color: #0074D9;
+        }
       }
     </style>
   </head>

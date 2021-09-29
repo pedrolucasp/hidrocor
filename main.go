@@ -44,80 +44,59 @@ func main() {
 	router := chi.NewRouter()
 	router.Use(middleware.RealIP)
 	router.Use(middleware.Logger)
+	router.Get("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		w.Write([]byte(""))
+	})
 
 	router.Get("/*", func(w http.ResponseWriter, r *http.Request) {
 		var (
-			buf    bytes.Buffer
-			source []byte
+			buf bytes.Buffer
 		)
 
 		route := chi.URLParam(r, "*")
+		md := goldmark.New(
+			goldmark.WithExtensions(
+				extension.GFM,
+				extension.Linkify,
+				extension.Table,
+				extension.TaskList,
+				extension.DefinitionList,
+				extension.Strikethrough,
+				extension.Footnote,
+			),
+			goldmark.WithParserOptions(
+				parser.WithAutoHeadingID(),
+			),
+			goldmark.WithRendererOptions(
+				html.WithHardWraps(),
+			),
+		)
 
-		// TODO: Move this into a context and pass this along with the main
-		// template
-		if route == "" {
-			route = "README.md"
-		}
-
-		routePath := path.Join(wikiPath, route)
-		fileInfo, err := os.Stat(routePath)
+		doc, err := Lookup(wikiPath, route)
 
 		if err != nil {
-			requestError("On Stating File", w)
+			requestError(fmt.Sprintf("Couldn't lookup file: %v", err), w)
 
 			return
 		}
 
-		if fileInfo.IsDir() {
-			files, err := os.ReadDir(routePath)
-			if err != nil {
-				requestError("On Reading Dir", w)
+		document := &Document{Title: route}
 
-				return
-			}
-
-			for _, file := range files {
-				log.Printf("fileName: ", file.Name())
-
-				switch file.Name() {
-				case
-					"index.md",
-					"INDEX.md",
-					"readme.md",
-					"README.md":
-					source, err = os.ReadFile(path.Join(routePath, file.Name()))
-
-					if err != nil {
-						requestError("On Opening file inside folder", w)
-
-						return
-					}
-				}
-			}
-		} else {
-			log.Printf("Not dir")
-			source, err = os.ReadFile(routePath)
-
-			if err != nil {
-				requestError("On Opening file", w)
-
-				return
-			}
-		}
-
-		if err := md.Convert(source, &buf); err != nil {
-			log.Printf("500 on Converting Markdown")
-			w.WriteHeader(500)
-			w.Write([]byte("500 Internal Server Error \n"))
+		if err := md.Convert(doc, &buf); err != nil {
+			requestError(fmt.Sprintf("Couldn't convert markdown due: %v", err), w)
 
 			return
 		}
 
-		// XXX: How to deal with images? Also move the charset to the HTML
-		// template
-		w.Header().Add("Content-Type", "text/html; charset=utf-8")
-		w.WriteHeader(200)
-		w.Write(buf.Bytes())
+		document.Content = template.HTML(buf.String())
+		parsedTemplate, _ := template.ParseFiles("templates/layout.html")
+		err = parsedTemplate.Execute(w, document)
+		if err != nil {
+			requestError(fmt.Sprintf("Couldn't execute the template due %v", err), w)
+
+			return
+		}
 	})
 
 	http.ListenAndServe(":3000", router)

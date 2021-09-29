@@ -2,16 +2,27 @@ package main
 
 import (
 	"bytes"
+	"flag"
+	"fmt"
+	"html/template"
 	"log"
 	"net/http"
-	"os"
-	"path"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer/html"
+)
+
+type Document struct {
+	Title   string
+	Content template.HTML
+}
+
+var (
+	wikiPath string
 )
 
 func requestError(msg string, w http.ResponseWriter) {
@@ -21,27 +32,19 @@ func requestError(msg string, w http.ResponseWriter) {
 }
 
 func main() {
-	wikiPath := "/home/eletrotupi/sources/cirandas.net-docs"
+	flag.StringVar(&wikiPath, "wiki", wikiPath, "Wiki path")
+	flag.Parse()
 
-	md := goldmark.New(
-		goldmark.WithExtensions(
-			extension.GFM,
-			extension.Linkify,
-			extension.Table,
-			extension.TaskList,
-			extension.DefinitionList,
-			extension.Strikethrough,
-			extension.Footnote,
-		),
-		goldmark.WithParserOptions(
-			parser.WithAutoHeadingID(),
-		),
-		goldmark.WithRendererOptions(
-			html.WithHardWraps(),
-		),
-	)
+	if wikiPath == "" {
+		log.Fatalf("You'll need to point to the location of the wiki (--wiki)")
+
+		return
+	}
 
 	router := chi.NewRouter()
+	router.Use(middleware.RealIP)
+	router.Use(middleware.Logger)
+
 	router.Get("/*", func(w http.ResponseWriter, r *http.Request) {
 		var (
 			buf    bytes.Buffer

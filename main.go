@@ -14,11 +14,13 @@ import (
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer/html"
+	"github.com/yuin/goldmark-meta"
 )
 
 type Document struct {
 	Title   string
 	Content template.HTML
+	Meta map[string]interface{}
 }
 
 var (
@@ -64,6 +66,7 @@ func main() {
 				extension.DefinitionList,
 				extension.Strikethrough,
 				extension.Footnote,
+				meta.Meta,
 			),
 			goldmark.WithParserOptions(
 				parser.WithAutoHeadingID(),
@@ -81,15 +84,23 @@ func main() {
 			return
 		}
 
-		document := &Document{Title: route}
+		document := &Document{}
+		context := parser.NewContext()
 
-		if err := md.Convert(doc, &buf); err != nil {
+		if err := md.Convert(doc, &buf, parser.WithContext(context)); err != nil {
 			requestError(fmt.Sprintf("Couldn't convert markdown due: %v", err), w)
 
 			return
 		}
 
 		document.Content = template.HTML(buf.String())
+		document.Meta = meta.Get(context)
+
+		title, ok := document.Meta["title"].(string)
+		if ok {
+			document.Title = title
+		}
+
 		parsedTemplate, _ := template.ParseFiles("templates/layout.html")
 		err = parsedTemplate.Execute(w, document)
 		if err != nil {

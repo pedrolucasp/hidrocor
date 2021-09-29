@@ -21,8 +21,8 @@ A wiki, is just a folder containing some markdown files. hidrocor will parse and
 turn them into simple pages, and link any `/*.md` contained inside the same
 folder. You can mantain these wikis as a git repository for collaboration.
 
-By default, hidrocor will lookup a configuration file in `/etc/hidrocor.yml`.
-You can supply one specific configuration file with the `-c` parameter.
+You'll need to supply the path of the wiki via the flag `--wiki`, and override
+the system service via `/etc/conf.d/hidrocor`.
 
 ## Contributing
 

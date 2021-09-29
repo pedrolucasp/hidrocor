@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ .Title }}</title>
+    <style>
+      body {
+        text-align: center;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 0 1rem;
+        font-family: sans-serif;
+      }
+
+      h1 {
+        font-size: 2.25rem;
+        line-height: 2.5rem;
+      }
+
+      article {
+        text-align: left;
+      }
+    </style>
+  </head>
+
+  <body>
+    <article>
+      {{ .Content }}
+    </article>
+  </body>
+</html>

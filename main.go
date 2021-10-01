@@ -36,6 +36,7 @@ func main() {
 	flag.StringVar(&wikiPath, "wiki", wikiPath, "Wiki path")
 	flag.Parse()
 
+	// TODO: Write an actual man page
 	if wikiPath == "" {
 		log.Fatalf("You'll need to point to the location of the wiki (--wiki)")
 
@@ -45,6 +46,8 @@ func main() {
 	router := chi.NewRouter()
 	router.Use(middleware.RealIP)
 	router.Use(middleware.Logger)
+
+	// TODO: Make this configurable
 	router.Get("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 		w.Write([]byte(""))
@@ -106,5 +109,7 @@ func main() {
 		}
 	})
 
+	// TODO: Make this configurable
+	log.Printf("Alive, at :3000")
 	http.ListenAndServe(":3000", router)
 }

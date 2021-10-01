@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"embed"
 	"flag"
 	"fmt"
 	"html/template"
@@ -26,6 +27,9 @@ var (
 	wikiPath string
 )
 
+//go:embed templates/*
+var templateData embed.FS
+
 func requestError(msg string, w http.ResponseWriter) {
 	log.Printf("500 on " + msg)
 	w.WriteHeader(500)
@@ -46,6 +50,8 @@ func main() {
 	router := chi.NewRouter()
 	router.Use(middleware.RealIP)
 	router.Use(middleware.Logger)
+
+	parsedTemplate, _ := template.ParseFS(templateData, "templates/layout.html")
 
 	// TODO: Make this configurable
 	router.Get("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
@@ -100,7 +106,6 @@ func main() {
 			document.Title = title
 		}
 
-		parsedTemplate, _ := template.ParseFiles("templates/layout.html")
 		err = parsedTemplate.Execute(w, document)
 		if err != nil {
 			requestError(fmt.Sprintf("Couldn't execute the template due %v", err), w)

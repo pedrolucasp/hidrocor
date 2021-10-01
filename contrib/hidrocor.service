@@ -1,0 +1,17 @@
+[Unit]
+Name=hidrocor
+Description="A simple, tiny markdown wiki service"
+After=network.target
+
+[Service]
+Type=simple
+
+EnvironmentFile=/etc/default/hidrocor
+ExecStart=/usr/local/bin/hidrocor --wiki $WIKI_PATH
+PIDFile=/run/hidrocor.pid
+
+RestartSec=1
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

@@ -12,19 +12,20 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark-meta"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
-	"github.com/yuin/goldmark-meta"
 )
 
 type Document struct {
 	Title   string
 	Content template.HTML
-	Meta map[string]interface{}
+	Meta    map[string]interface{}
 }
 
 var (
 	wikiPath string
+	bind     string
 )
 
 //go:embed templates/*
@@ -38,6 +39,7 @@ func requestError(msg string, w http.ResponseWriter) {
 
 func main() {
 	flag.StringVar(&wikiPath, "wiki", wikiPath, "Wiki path")
+	flag.StringVar(&bind, "bind", ":3000", "Address for server to bind to")
 	flag.Parse()
 
 	// TODO: Write an actual man page
@@ -114,7 +116,6 @@ func main() {
 		}
 	})
 
-	// TODO: Make this configurable
-	log.Printf("Alive, at :3000")
-	http.ListenAndServe(":3000", router)
+	log.Printf("Alive, at %s", bind)
+	http.ListenAndServe(bind, router)
 }
